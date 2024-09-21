@@ -44,7 +44,7 @@ const registerUser  = asyncHandler( async (req, res) => {
     // }
 
     if(
-        [fullname, username, password,  email].some((field)=>(field?.trim() === ""))
+        [fullname, username, password,  email].some((field)=> field?.trim() === "")
     ){
         throw new ApiError(400, "All fields are required")
     }
@@ -117,7 +117,7 @@ const loginUser = asyncHandler( async (req, res) => {
 
         const {email, username, password} = req.body
 
-        if (!username || !email){
+        if (!username && !email){
             throw new ApiError(400, "username or email is required")
         }
 
@@ -132,7 +132,7 @@ const loginUser = asyncHandler( async (req, res) => {
         const isPasswordValid = await user.isPasswordCorrect(password)
         
         if (!isPasswordValid) {
-            throw new ApiError(404, "Invalid user credentials")
+            throw new ApiError(401, "Invalid user credentials")
         }
 
         const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id)
@@ -167,7 +167,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(
     req.user._id,
     {
-        $set:{
+        $unset:{
             refreshToken: undefined
         }
     },
